@@ -75,7 +75,7 @@ module tx #(
   //output register
   always @(posedge clk or negedge rst_n) begin
     if (~rst_n) data_out <= 1'b1;
-    else if (baud_tick) data_out <= data_out_wire;
+    else data_out <= data_out_wire;
   end
 
   //output logic

@@ -1,6 +1,6 @@
 module reciver #(
     parameter data_width = 8,
-    parameter baud_clk = 2,
+    parameter baud_rate = 2,
     parameter sys_clk = 10
 ) (
     input clk,
@@ -18,8 +18,8 @@ module reciver #(
   // End of automatics
 
   baud #(
-      .sys_clk (sys_clk),
-      .baud_clk(baud_clk * 16)
+      .sys_clk  (sys_clk),
+      .baud_rate(baud_rate * 16)
   ) uut1 (
       /*AUTOINST*/
       // Outputs
