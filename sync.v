@@ -8,7 +8,9 @@ module sync (
 
   wire inter;
 
-  reg ff1, ff2;
+  reg  ff1 = 1'b0;
+
+  reg  ff2 = 1'b0;
 
   // ff1
   always @(posedge clk or negedge rst_n) begin

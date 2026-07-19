@@ -1,10 +1,10 @@
 module reciver #(
     parameter data_width = 8,
-    parameter baud_rate = 2,
-    parameter sys_clk = 10
+    parameter baud_rate = 9600,
+    parameter sys_clk = 100_000_000
 ) (
     input clk,
-    input rst_n,
+    input rst_not,
     input in_sync,
     output rx_done,
     output rx_busy,
@@ -13,11 +13,13 @@ module reciver #(
 );
   /*AUTOWIRE*/
   // Beginning of automatic wires (for undeclared instantiated-module outputs)
-  wire baud_tick;  // From uut1 of baud.v
-  wire data_in;  // From uut2 of sync.v
+  wire baud_tick;  // From uut1 of baud_rx.v
+  wire data_in;
+  wire rst_n;
+  // From uut2 of sync.v
   // End of automatics
 
-  baud #(
+  baud_rx #(
       .sys_clk  (sys_clk),
       .baud_rate(baud_rate * 16)
   ) uut1 (
@@ -60,6 +62,7 @@ module reciver #(
   );
 
 
+  assign rst_n = ~(rst_not);
 
 
 

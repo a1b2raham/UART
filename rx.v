@@ -5,11 +5,11 @@ module rx #(
     input rst_n,
     input baud_tick,
     input data_in,
-    output reg rx_done,
-    output reg rx_busy,
-    output reg frame_error,
+    output reg rx_done = 1'b0,
+    output reg rx_busy = 1'b0,
+    output reg frame_error = 1'b0,
 
-    output reg [data_width-1:0] data_out
+    output reg [data_width-1:0] data_out = 0
 );
 
   localparam idle = 2'b00;
@@ -20,12 +20,12 @@ module rx #(
 
 
 
-  reg  [                   3:0] counter;
+  reg  [                   3:0] counter = 3'b0;
   wire [                   3:0] count_out;
   reg  [                   3:0] value;
   wire                          en_count;
 
-  reg  [$clog2(data_width)-1:0] data_counter;
+  reg  [$clog2(data_width)-1:0] data_counter = 0;
   wire [$clog2(data_width)-1:0] data_counter_wire;
   wire                          en_data_count;
 
@@ -38,11 +38,12 @@ module rx #(
   wire                          frame_error_wire;
 
 
-  reg [1:0] nxt_state, state;
+  reg  [                   1:0] nxt_state;
+  reg  [                   1:0] state = idle;
 
 
-  reg [data_width-1:0] data_shift_reg;
-  wire en_data_shift;
+  reg  [        data_width-1:0] data_shift_reg = 0;
+  wire                          en_data_shift;
 
 
   // state register
@@ -129,6 +130,8 @@ module rx #(
       default: value = 4'd0;
     endcase
   end
+
+
 
 
 endmodule

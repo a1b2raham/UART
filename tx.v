@@ -6,9 +6,9 @@ module tx #(
     input                       rst_n,
     input                       baud_tick,
     input      [data_width-1:0] data_in,
-    output reg                  data_out,
-    output reg                  tx_done,
-    output reg                  tx_busy
+    output reg                  data_out = 1'b1,
+    output reg                  tx_done = 1'b0,
+    output reg                  tx_busy = 1'b0
 );
 
   localparam idle = 2'b00;
@@ -17,8 +17,10 @@ module tx #(
   localparam stop = 2'b10;
 
 
-  reg [1:0] state, nxt_state;
-  reg  [$clog2(data_width)- 1:0] data_count;
+  reg  [                    1:0] state = idle;
+
+  reg  [                    1:0] nxt_state;
+  reg  [$clog2(data_width)- 1:0] data_count = 0;
   wire [ $clog2(data_width)-1:0] data_count_wire;
   wire                           data_chk;
   reg  [       data_width-1 : 0] data_reg;
@@ -26,6 +28,8 @@ module tx #(
   reg                            data_out_wire;
   wire                           tx_done_wire;
   wire                           tx_busy_wire;
+  wire                           counter_en;
+
 
 
 
@@ -37,8 +41,8 @@ module tx #(
 
   //data_pointer_counter
   always @(posedge clk or negedge rst_n) begin
-    if (~rst_n) data_count <= 1'b0;
-    else if (baud_tick) data_count <= data_count_wire;
+    if (~rst_n) data_count <= 0;
+    else if (counter_en) data_count <= data_count_wire;
   end
 
   //data_store_reg
@@ -52,24 +56,13 @@ module tx #(
   always @(*) begin
     nxt_state = state;
     case (state)
-      idle: begin
-        if (en) nxt_state = start;
-        else nxt_state = idle;
-      end
+      idle: if (en) nxt_state = start;
       start: if (baud_tick) nxt_state = trans;
-      trans: begin
-        if (baud_tick) begin
-          if (data_chk) nxt_state = trans;
-          else nxt_state = stop;
-        end
-      end
+      trans: if (baud_tick && data_chk) nxt_state = stop;
       stop: if (baud_tick) nxt_state = idle;
       default: nxt_state = idle;
     endcase  // case (state)
-
   end  // always @ (*)
-
-
 
 
   //output register
@@ -103,12 +96,12 @@ module tx #(
   end
 
 
-  assign data_count_wire = ((state == trans) && data_chk) ? data_count + 1'b1 : 0;//mux for data_pointer
-  assign data_chk = (data_count < data_width - 1);  // data_finished
+  assign data_count_wire = (data_chk) ? 0 : data_count + 1'b1;  //mux for data_pointer
+  assign data_chk = (data_count == data_width - 1);  // data_finished
   assign tx_done_wire = ((state == stop) && baud_tick);
-  assign tx_busy_wire = (~(state == idle) && baud_tick);
-
+  assign tx_busy_wire = ~(state == idle);
   assign data_sent = (en && state == idle);  // computer has sent data
+  assign counter_en = ((state == trans) && baud_tick);
 
 
 
